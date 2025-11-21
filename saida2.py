@@ -1,0 +1,49 @@
+from pybricks.pupdevices import Motor
+from pybricks.parameters import Port, Direction, Stop
+from pybricks.robotics import DriveBase
+from pybricks.tools import wait
+
+# --- Inicializa motores ---
+left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
+right_motor = Motor(Port.B)
+motorc = Motor(Port.C)
+motord = Motor(Port.D, Direction.CLOCKWISE, [12, 36, 12, 20])
+
+# --- Inicializa DriveBase ---
+drive_base = DriveBase(left_motor, right_motor, wheel_diameter=62.4, axle_track=120)
+drive_base.use_gyro(True)
+
+drive_base.straight(-20)
+drive_base.reset()
+# --- Missão inicial da base ---
+drive_base.settings(straight_speed=800,)
+drive_base.straight(450)
+drive_base.turn(8)
+drive_base.straight(495)
+drive_base.turn(80)
+motord.run_angle(1000, -370)
+motorc.run_angle(1000, -2000)
+drive_base.settings(straight_speed=100)
+drive_base.straight(120)
+motord.run_angle(1000, 210)
+drive_base.straight(70)
+motorc.run_angle(1000, 1400)
+wait(10)
+motorc.run_angle(1000, -1500)
+drive_base.straight(-120)
+drive_base.turn(-20)
+drive_base.straight(-50)
+motord.run_angle(1000, 330)
+drive_base.turn(59)
+drive_base.settings(straight_speed=1000)
+drive_base.straight(420)
+motorc.run_angle(1000, 2000)
+drive_base.turn(48)
+motord.run_angle(1200, -600)
+drive_base.settings(straight_speed=1000)
+drive_base.straight(-10)
+motord.run_angle(1000, 350)
+drive_base.turn(-85)
+drive_base.straight(-300)
+drive_base.turn(-60)
+drive_base.straight(-600)
