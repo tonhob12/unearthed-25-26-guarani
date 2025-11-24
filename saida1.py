@@ -3,6 +3,7 @@ from pybricks.parameters import Port, Direction, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
+
 # --- Inicializa motores ---
 left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
 right_motor = Motor(Port.B)
