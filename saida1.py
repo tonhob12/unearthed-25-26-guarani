@@ -20,31 +20,28 @@ drive_base.reset()
 drive_base.settings(straight_speed=800)
 drive_base.straight(150)
 drive_base.turn(10)
-drive_base.straight(507)
-drive_base.turn(-96)
+drive_base.straight(525)
+drive_base.turn(-100)
 drive_base.settings(straight_speed=200)
-drive_base.straight(150)
+drive_base.straight(200)
+drive_base.turn(5)
 
 # --- TRAVA a base para executar o motor D ---
 drive_base.stop()        # trava as rodas da base
-motord.run_angle(1000, -2000)     # executa o motor D enquanto a base está parada
+motord.run_angle(10000, -2100)     # executa o motor D enquanto a base está parada
 
 # --- Após missão do motor D, libera a base ---
-
-# --- Continua a missão ---
 drive_base.turn(20)
 drive_base.turn(-40)
 drive_base.turn(25)
-
-drive_base.straight(40)
-
+# --- Continua a missão --
+drive_base.straight(60)
 motord.run_angle(1000, 2000)
-drive_base.straight(65)
 # --- Braço secundário ---
 motorc.run_angle(1000, -1350)
 wait(10)
 drive_base.settings(straight_speed=100)
-drive_base.straight(-40)
+drive_base.straight(-60)
 
 drive_base.straight(60)
 
