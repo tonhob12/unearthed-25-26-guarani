@@ -20,10 +20,10 @@ drive_base.reset()
 drive_base.settings(straight_speed=800)
 drive_base.straight(150)
 drive_base.turn(10)
-drive_base.straight(525)
+drive_base.straight(512)
 drive_base.turn(-100)
 drive_base.settings(straight_speed=200)
-drive_base.straight(200)
+drive_base.straight(220)
 drive_base.turn(5)
 
 # --- TRAVA a base para executar o motor D ---
