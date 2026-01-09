@@ -1,0 +1,155 @@
+from pybricks.hubs import PrimeHub
+from pybricks.pupdevices import Motor, ColorSensor
+from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
+from pybricks.tools import wait, StopWatch, multitask, run_task
+from pybricks.robotics import DriveBase
+from umath import pi
+
+global hub, motorc, right_motor, left_motor, motord, Drive_base,Chassis_sensor,color_sensor
+hub = PrimeHub()
+hub.system.set_stop_button(Button.CENTER)
+left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
+right_motor = Motor(Port.B)
+motorc = Motor(Port.C)
+motord = Motor(Port.D)
+
+# --- Inicializa DriveBase ---
+drive_base = DriveBase(left_motor, right_motor, wheel_diameter=62.4, axle_track=120)
+drive_base.use_gyro(True)
+drive_base.settings(turn_rate=60 * 3.6)
+timer_move = StopWatch()
+
+def Gyro():
+    Gyro = hub.imu.heading()
+    Gyro = Gyro % 360
+    if  Gyro > 180:
+        Gyro -= 360
+    return Gyro
+
+def pd_move_loop(Power, Kp, Kd, prev_err):
+    angle_B = right_motor.angle()
+    angle_A = left_motor.angle()
+    err = angle_B - angle_A
+
+    P = Kp * err
+    D = Kd * (err - prev_err)
+    pid_adj = P + D
+
+    right_motor.dc(Power - pid_adj)
+    left_motor.dc(Power + pid_adj)
+
+    wait(10)
+    return err
+
+def pd_move_enc(Power, Kp, Kd, Deg, Brake=True):
+    prev_err = 0
+    right_motor.reset_angle(0)
+    left_motor.reset_angle(0)
+
+    while (abs(right_motor.angle()) + abs(left_motor.angle())) / 2 <= Deg:
+        prev_err = move_sync_pd(Power, Kp, Kd, prev_err)
+
+    if Brake:
+        Drive_base.stop()
+
+
+def pd_move_spin(Power, Kp, Kd, Total_Deg, Brake=True):
+    right_motor.reset_angle(0)
+    left_motor.reset_angle(0)
+    prev_err = 0
+
+    while (abs(right_motor.angle()) + abs(left_motor.angle())) / 2 <= Total_Deg:
+        angle_B = right_motor.angle()
+        angle_C = left_motor.angle()
+
+        
+        err = angle_B + angle_C
+
+        P = Kp * err
+        D = Kd * (err - prev_err)
+        pid_adj = P + D
+
+        right_motor.dc(Power - pid_adj)   
+        left_motor.dc(-Power - pid_adj)  
+
+        prev_err = err
+        wait(10)
+
+    if Brake:
+        Drive_base.stop()
+
+
+def move_time(Power_B, Power_C, ms, Brake=True):
+    timer_move.reset()
+    while timer_move.time() < ms:
+        right_motor.dc(Power_B)
+        left_motor.dc(Power_C)
+    if Brake:
+        Drive_base.stop()
+
+
+def move_deg(Power_B, Power_C, Deg, Brake=True):
+    right_motor.reset_angle(0)
+    left_motor.reset_angle(0)
+    while (abs(right_motor.angle()) + abs(left_motor.angle())) / 2 <= Deg:
+        right_motor.dc(Power_B)
+        left_motor.dc(Power_C)
+    if Brake:
+        Drive_base.stop()
+
+
+def turn_gyro(hdg, Brake=True):
+    Drive_base.settings(turn_rate=60 * 3.6)
+    Drive_base.turn(hdg)
+    if Brake:
+        Drive_base.stop()
+
+def turn_gyrospeed(speed,hdg, Brake=True):
+    Drive_base.settings(turn_rate= speed * 3.6)
+    Drive_base.turn(hdg)
+    if Brake:
+        Drive_base.stop()
+
+def gyro_track(Kp, Kd, Deg1, Deg2, GyroDeg, Lowpower, Bigpower, Lowpower2, Deg,Brake=True):
+    right_motor.reset_angle(0)
+    left_motor.reset_angle(0)
+    Last_error = 0
+    MotorDeg = 0
+    while MotorDeg <= Deg:
+        MotorDeg = (abs(right_motor.angle()) + abs(left_motor.angle())) / 2
+        if MotorDeg > Deg1 and MotorDeg < Deg-Deg2:
+            power = Bigpower
+        else:
+            if MotorDeg < Deg / 2:
+                inMin = 0
+                inMax = Deg1
+                outMin = Lowpower
+                outMax = Bigpower
+            else:
+                inMin = Deg - Deg2
+                inMax = Deg
+                outMin = Bigpower
+                outMax = Lowpower2
+            power = map_value(MotorDeg, inMin, inMax, outMin, outMax)
+        error = GyroDeg - Gyro()
+        derivative = error - Last_error
+        correction = (Kp * error) + (Kd * derivative)
+        right_motor.dc(power + correction)
+        left_motor.dc(power - correction)
+        Last_error = error
+        wait(10)
+    if Brake:
+        Drive_base.stop()
+
+def a_motor(Power, Deg, is_wait=True):
+    motorc.run_angle(Power * 11, Deg, wait=is_wait)
+
+def d_motor(Power, Deg, is_wait=True):
+    motord.run_angle(Power * 11, Deg, wait=is_wait)
+
+def bc_stop():
+    right_motor.dc(0)
+    left_motor.dc(0)
+
+def map_value(value, from_low, from_high, to_low, to_high):
+    return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
