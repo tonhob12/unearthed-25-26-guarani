@@ -21,14 +21,14 @@ timer_move = StopWatch()
 
 def Gyro():
     Gyro = hub.imu.heading()
-    Gyro = Gyro % 360
+    Gyro = Gyro % 360 #0 a 360 e nao de 0 a 180 ou 0 a -180
     if  Gyro > 180:
         Gyro -= 360
     return Gyro
 
 def pd_move_loop(Power, Kp, Kd, prev_err):
-    angle_B = right_motor.angle()
-    angle_A = left_motor.angle()
+    angle_B = right_motor.angle() #360
+    angle_A = left_motor.angle() #350
     err = angle_B - angle_A
 
     P = Kp * err
@@ -40,6 +40,7 @@ def pd_move_loop(Power, Kp, Kd, prev_err):
 
     wait(10)
     return err
+
 
 def pd_move_enc(Power, Kp, Kd, Deg, Brake=True):
     prev_err = 0
