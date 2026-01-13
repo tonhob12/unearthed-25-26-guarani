@@ -5,7 +5,7 @@ from pybricks.tools import wait, StopWatch, multitask, run_task
 from pybricks.robotics import DriveBase
 from umath import pi
 
-global hub, motorc, right_motor, left_motor, motord, Drive_base,Chassis_sensor,color_sensor
+global hub, motorc, right_motor, left_motor, motord, drive_base,Chassis_sensor,color_sensor
 hub = PrimeHub()
 hub.system.set_stop_button(Button.CENTER)
 left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
@@ -14,7 +14,7 @@ motorc = Motor(Port.C)
 motord = Motor(Port.D)
 
 # --- Inicializa DriveBase ---
-drive_base = DriveBase(left_motor, right_motor, wheel_diameter=62.4, axle_track=120)
+drive_base = DriveBase(left_motor, right_motor, wheel_diameter=62.4, axle_track=125)
 drive_base.use_gyro(True)
 drive_base.settings(turn_rate=60 * 3.6)
 timer_move = StopWatch()
@@ -48,10 +48,10 @@ def pd_move_enc(Power, Kp, Kd, Deg, Brake=True):
     left_motor.reset_angle(0)
 
     while (abs(right_motor.angle()) + abs(left_motor.angle())) / 2 <= Deg:
-        prev_err = move_sync_pd(Power, Kp, Kd, prev_err)
+        prev_err = pd_move_loop(Power, Kp, Kd, prev_err)
 
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 
 def pd_move_spin(Power, Kp, Kd, Total_Deg, Brake=True):
@@ -77,7 +77,7 @@ def pd_move_spin(Power, Kp, Kd, Total_Deg, Brake=True):
         wait(10)
 
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 
 def move_time(Power_B, Power_C, ms, Brake=True):
@@ -86,7 +86,7 @@ def move_time(Power_B, Power_C, ms, Brake=True):
         right_motor.dc(Power_B)
         left_motor.dc(Power_C)
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 
 def move_deg(Power_B, Power_C, Deg, Brake=True):
@@ -96,20 +96,20 @@ def move_deg(Power_B, Power_C, Deg, Brake=True):
         right_motor.dc(Power_B)
         left_motor.dc(Power_C)
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 
 def turn_gyro(hdg, Brake=True):
-    Drive_base.settings(turn_rate=60 * 3.6)
-    Drive_base.turn(hdg)
+    drive_base.settings(turn_rate=60 * 3.6)
+    drive_base.turn(hdg)
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 def turn_gyrospeed(speed,hdg, Brake=True):
-    Drive_base.settings(turn_rate= speed * 3.6)
-    Drive_base.turn(hdg)
+    drive_base.settings(turn_rate= speed * 3.6)
+    drive_base.turn(hdg)
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
 def gyro_track(Kp, Kd, Deg1, Deg2, GyroDeg, Lowpower, Bigpower, Lowpower2, Deg,Brake=True):
     right_motor.reset_angle(0)
@@ -135,14 +135,56 @@ def gyro_track(Kp, Kd, Deg1, Deg2, GyroDeg, Lowpower, Bigpower, Lowpower2, Deg,B
         error = GyroDeg - Gyro()
         derivative = error - Last_error
         correction = (Kp * error) + (Kd * derivative)
-        right_motor.dc(power + correction)
-        left_motor.dc(power - correction)
+        right_motor.dc(power - correction)
+        left_motor.dc(power + correction)
         Last_error = error
         wait(10)
     if Brake:
-        Drive_base.stop()
+        drive_base.stop()
 
-def a_motor(Power, Deg, is_wait=True):
+
+def gyro_turn_pd(TargetDeg, Kp, Kd, MaxPower, MinPower, Brake=True):
+    start_angle = Gyro()
+    last_error = 0
+    stable = 0
+
+    while True:
+        current = Gyro() - start_angle
+        error = TargetDeg - current
+
+        # normaliza
+        if error > 180:
+            error -= 360
+        elif error < -180:
+            error += 360
+
+        if abs(error) < 1.0:
+            stable += 1
+            if stable > 6:
+                break
+        else:
+            stable = 0
+
+        derivative = error - last_error
+        correction = Kp * error + Kd * derivative
+
+        # clamp
+        correction = max(-MaxPower, min(MaxPower, correction))
+
+        # torque mínimo
+        if abs(correction) < MinPower:
+            correction = MinPower if correction > 0 else -MinPower
+
+        right_motor.dc(-correction)
+        left_motor.dc(correction)
+
+        last_error = error
+        wait(10)
+
+    if Brake:
+        bc_stop()
+
+def c_motor(Power, Deg, is_wait=True):
     motorc.run_angle(Power * 11, Deg, wait=is_wait)
 
 def d_motor(Power, Deg, is_wait=True):
@@ -154,3 +196,7 @@ def bc_stop():
 
 def map_value(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
+
+gyro_turn_pd(90, 1.2, 2.5, 60, 25)
+
+
