@@ -111,36 +111,57 @@ def turn_gyrospeed(speed,hdg, Brake=True):
     if Brake:
         drive_base.stop()
 
-def gyro_track(Kp, Kd, Deg1, Deg2, GyroDeg, Lowpower, Bigpower, Lowpower2, Deg,Brake=True):
+def gyro_track(
+    Kp, Kd,
+    Deg1, Deg2,
+    GyroDeg,
+    Lowpower, Bigpower, Lowpower2,
+    Deg,
+    Brake=True
+):
     right_motor.reset_angle(0)
     left_motor.reset_angle(0)
-    Last_error = 0
-    MotorDeg = 0
-    while MotorDeg <= Deg:
-        MotorDeg = (abs(right_motor.angle()) + abs(left_motor.angle())) / 2
-        if MotorDeg > Deg1 and MotorDeg < Deg-Deg2:
+
+    direction = 1 if Deg > 0 else -1
+    target = abs(Deg)
+
+    last_error = 0
+
+    while True:
+        motor_deg = abs((right_motor.angle() + left_motor.angle()) / 2)
+
+        if motor_deg >= target:
+            break
+
+        # -------- PERFIL DE VELOCIDADE (SEMPRE POSITIVO) --------
+        if motor_deg < Deg1:
+            power = map_value(
+                motor_deg,
+                0, Deg1,
+                Lowpower, Bigpower
+            )
+        elif motor_deg < target - Deg2:
             power = Bigpower
         else:
-            if MotorDeg < Deg / 2:
-                inMin = 0
-                inMax = Deg1
-                outMin = Lowpower
-                outMax = Bigpower
-            else:
-                inMin = Deg - Deg2
-                inMax = Deg
-                outMin = Bigpower
-                outMax = Lowpower2
-            power = map_value(MotorDeg, inMin, inMax, outMin, outMax)
+            power = map_value(
+                motor_deg,
+                target - Deg2, target,
+                Bigpower, Lowpower2
+            )
+
+        # -------- PD DO GYRO --------
         error = GyroDeg - Gyro()
-        derivative = error - Last_error
+        derivative = error - last_error
         correction = (Kp * error) + (Kd * derivative)
-        right_motor.dc(power - correction)
-        left_motor.dc(power + correction)
-        Last_error = error
+
+        right_motor.dc(direction * power - correction)
+        left_motor.dc(direction * power + correction)
+
+        last_error = error
         wait(10)
+
     if Brake:
-        drive_base.stop()
+        bc_stop()
 
 
 def gyro_turn_pd(TargetDeg, Kp, Kd, MaxPower, MinPower, Brake=True):
@@ -197,12 +218,23 @@ def bc_stop():
 def map_value(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
 
-gyro_track(0, 0, 100, 100, 0, 30, 60, 20, -225)
-gyro_track(1.2, 2.5, 100, 100, 0, 30, 60, 20, 360)
-gyro_turn_pd(15, 1.2, 3, 60, 25)
-gyro_track(1.2, 2.5, 200, 200, 15,  30, 60, 20, 810)
-gyro_turn_pd(-105, 1.2, 2.5, 60, 22)
+move_time(-60, -60, 200)
+drive_base.reset()
+hub.imu.reset_heading(0)
+gyro_track(1.2, 2.5, 200, 200, 0, 30, 70, 20, 360)
+gyro_turn_pd(10, 1.2, 3, 70, 25)
+gyro_track(1.2, 2.5, 200, 100, 15,  30, 70, 20, 810)
+gyro_turn_pd(-105, 1.2, 3, 70, 25)
 wait(50)
-move_time(60, 60, 400)
-d_motor(50, -2000)
+move_time(60, 60, 500)
+d_motor(100, -1900)
 c_motor(50, -1350)
+d_motor(100, 1900)
+gyro_track(1.2, 2.5, 200, 200, -90,  30, 70, 20, -100)
+wait(50)
+gyro_track(1.2, 2.5, 200, 200, -90,  30, 70, 20, 60)
+gyro_track(1.2, 2.5, 200, 100, -90,  30, 70, 20, -250)
+c_motor(100, 860)
+gyro_turn_pd(-80, 1.2, 3, 60, 25)
+
+gyro_track(1.2, 2.5, 200, 200, -170, 40, 100, 30, 1200)
