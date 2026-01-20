@@ -205,11 +205,12 @@ def gyro_turn_pd(TargetDeg, Kp, Kd, MaxPower, MinPower, Brake=True):
     if Brake:
         bc_stop()
 
-def c_motor(Power, Deg, is_wait=True):
-    motorc.run_angle(Power * 11, Deg, wait=is_wait)
+async def c_motor(Power, Deg, is_wait=True):
+    await motorc.run_angle(Power * 11, Deg, wait=is_wait)
 
-def d_motor(Power, Deg, is_wait=True):
-    motord.run_angle(Power * 11, Deg, wait=is_wait)
+async def d_motor(Power, Deg, is_wait=True):
+    await motord.run_angle(Power * 11, Deg, wait=is_wait)
+
 
 def bc_stop():
     right_motor.dc(0)
@@ -218,22 +219,24 @@ def bc_stop():
 def map_value(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
 
+async def m1andm2():
+    await multitask(d_motor(100, -3500), c_motor(50, -1450))
+
 move_time(-60, -60, 200)
 drive_base.reset()
 hub.imu.reset_heading(0)
-gyro_track(1.2, 2.5, 200, 200, 0, 30, 70, 20, 360)
-gyro_turn_pd(10, 1.2, 4.2, 70, 30)
-gyro_track(1.2, 2.5, 200, 100, 15,  30, 70, 20, 820)
-gyro_turn_pd(-105, 1.2, 3, 70, 30)
+gyro_track(1.2, 2.5, 200, 200, 0, 30, 80, 30, 350)
+gyro_turn_pd(10, 1.2, 4.8, 80, 30)
+gyro_track(1.2, 2.5, 200, 100, 15,  30, 80, 30, 808)
+gyro_turn_pd(-105, 1.2,4.8, 80, 30)
 wait(50)
 move_time(60, 60, 500)
-d_motor(100, -1900)
-c_motor(50, -1450)
-d_motor(100, 1900)
-gyro_track(1.2, 2.5, 200, 200, -90,  30, 70, 20, -100)
+run_task(m1andm2())
+run_task(d_motor(100, 3500))
+gyro_track(1.2, 2.5, 200, 200, -90,  30, 80, 30, -100)
 wait(50)
-gyro_track(1.2, 2.5, 200, 200, -90,  30, 70, 20, 60)
-gyro_track(1.2, 2.5, 200, 100, -90,  30, 70, 20, -250)
-c_motor(100, 880)
-gyro_turn_pd(-80, 1.2, 3, 60, 30)
+gyro_track(1.2, 2.5, 200, 200, -90,  30, 80, 30, 60)
+gyro_track(1.2, 2.5, 200, 100, -90,  30, 80, 30, -250)
+run_task(c_motor(100, 880))
+gyro_turn_pd(-80, 1.2, 4.8, 80, 30)
 gyro_track(1.2, 2.5, 200, 200, -170, 40, 100, 30, 1200)
