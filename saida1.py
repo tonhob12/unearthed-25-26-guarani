@@ -220,7 +220,7 @@ def map_value(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
 
 async def m1andm2():
-    await multitask(d_motor(100, -3500), c_motor(50, -1450))
+    await multitask(d_motor(100, -3500), c_motor(50, -1600))
 
 move_time(-60, -60, 200)
 drive_base.reset()
@@ -235,7 +235,7 @@ run_task(m1andm2())
 run_task(d_motor(100, 3000))
 gyro_track(1.2, 2.5, 200, 200, -90,  30, 80, 30, -100)
 wait(50)
-gyro_track(1.2, 2.5, 200, 200, -90,  30, 80, 30, 60)
+gyro_track(1.2, 2.5, 200, 200, -90,  30, 80, 30, 70)
 gyro_track(1.2, 2.5, 200, 100, -90,  30, 80, 30, -250)
 run_task(c_motor(100, 880))
 gyro_turn_pd(-80, 1.2, 4.8, 80, 30)
