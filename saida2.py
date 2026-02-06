@@ -221,24 +221,25 @@ def bc_stop():
 def map_value(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
 
+async def mult():
+    await multitask(motord.run_time(600, 1200), motorc.run_angle(1000, 1550))
 
 move_time(-60, -60, 200)
 drive_base.reset()
 hub.imu.reset_heading(0)
 motord.run_time(-600, 1150)
 gyro_track(1.2, 2.5, 300, 200, 0, 30, 80, 20, 490)
-gyro_track(1.2, 2.5, 100, 100, 14, 30, 80, 20, 650)
+gyro_track(1.2, 2.5, 100, 100, 13, 30, 80, 20, 650)
 gyro_track(1.2, 2.5, 300, 200, 0, 30, 80, 20, 600)
 wait(500)
 move_time(50, 50, 1000)
 gyro_track(1.2, 2.5, 200, 100, 0, 30, 80, 20, -188)
 wait(500)
 gyro_turn_pd(90, 1.2, 4.2, 80, 30)
-motord.run_time(600, 1200)
+run_task(mult())
 motord.reset_angle(0)
-c_motor(100, 1550)
 gyro_track(1.2, 2.5, 100, 50, 90, 30, 60, 20, 215)
-d_motor(50, -136)
+d_motor(50, -135)
 c_motor(100, -1050)
 wait(500)
 c_motor(100, 1200)
