@@ -237,7 +237,7 @@ for i in range(3):
 c_motor(100, -115)
 gyro_turn_pd(58, 1.2, 5.2, 80, 32)
 d_motor(100, 220)
-move_time(80, 80, 2100)
+move_time(80, 80, 1400)
 d_motor(100,1460)
 gyro_track(2.2, 4.2, 300, 300, 58, 40, 80, 30, -250)
 gyro_turn_pd(-58, 1.2, 5.2, 80, 32)
