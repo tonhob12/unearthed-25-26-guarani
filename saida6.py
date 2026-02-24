@@ -222,7 +222,7 @@ def map_value(value, from_low, from_high, to_low, to_high):
 move_time(-60, -60, 200)
 drive_base.reset()
 hub.imu.reset_heading(0)
-gyro_track(2.2, 4.2, 400, 400, 0, 30, 80, 30, 1160)
+gyro_track(2.2, 4.2, 400, 400, 0, 30, 80, 30, 1180)
 move_deg(80, 20, 170)
 gyro_track(2.2, 4.2, 300, 300, -85, 30, 80, 30, 700)
 gyro_turn_pd(90,1.2,4.2,60,30)
